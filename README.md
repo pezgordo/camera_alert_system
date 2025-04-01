@@ -10,6 +10,7 @@ A FastAPI-based system for processing camera events and generating alerts. This 
 - RQ worker for processing events
 - WebSocket support for real-time alerts
 - Docker Compose setup for easy deployment
+- Automated setup script for quick deployment
 
 ## Prerequisites
 
@@ -25,19 +26,32 @@ git clone <repository-url>
 cd camera-alert-system
 ```
 
-2. Start the services using Docker Compose:
+2. Make the setup script executable:
 
 ```bash
-docker-compose up --build
+chmod +x setup.sh
+```
+
+3. Run the setup script:
+
+```bash
+./setup.sh
 ```
 
 The system will be available at:
 
-- API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
+- API: http://localhost:7001
+- Frontend: http://localhost:5173
+- API Documentation: http://localhost:7001/docs
+
+## Default Login Credentials
+
+- Email: test@example.com
+- Password: testpassword
 
 ## API Endpoints
 
+- `POST /token`: Get authentication token
 - `POST /events/`: Create a new camera event
 - `GET /alerts/`: Get list of alerts
 - `WS /ws/alerts`: WebSocket endpoint for real-time alerts
@@ -49,8 +63,8 @@ To run the application locally:
 1. Create a virtual environment:
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 2. Install dependencies:
@@ -62,7 +76,7 @@ pip install -r requirements.txt
 3. Set up environment variables:
 
 ```bash
-export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/camera_alerts"
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5433/camera_alerts"
 export REDIS_URL="redis://localhost:6379/0"
 export JWT_SECRET="your-secret-key-here"
 ```
@@ -70,7 +84,7 @@ export JWT_SECRET="your-secret-key-here"
 4. Run the application:
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 7001
 ```
 
 ## Project Structure
@@ -85,9 +99,36 @@ uvicorn app.main:app --reload
 │   ├── database.py
 │   ├── auth.py
 │   └── tasks.py
+├── scripts/
+│   ├── setup.py
+│   ├── simulate_events.py
+│   └── test_system.py
+├── frontend/
+│   └── src/
 ├── docker-compose.yml
 ├── Dockerfile
+├── setup.sh
 └── requirements.txt
+```
+
+## Testing the System
+
+1. Start the system using the setup script:
+
+```bash
+./setup.sh
+```
+
+2. Simulate camera events:
+
+```bash
+docker-compose exec web python scripts/simulate_events.py
+```
+
+3. Run system tests:
+
+```bash
+docker-compose exec web python scripts/test_system.py
 ```
 
 ## Security Notes
@@ -98,3 +139,5 @@ uvicorn app.main:app --reload
   - Use environment variables for sensitive data
   - Enable HTTPS
   - Implement rate limiting
+  - Change the default JWT secret key
+  - Use secure database credentials
