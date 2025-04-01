@@ -8,6 +8,7 @@ project_root = str(Path(__file__).parent.parent)
 sys.path.append(project_root)
 
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.models import User, Event, Alert
 from app.auth import get_password_hash
@@ -42,6 +43,7 @@ def init_db():
 
 def create_test_user():
     """Create test user if it doesn't exist"""
+    db = None
     try:
         DATABASE_URL = "postgresql://postgres:postgres@db:5432/camera_alerts"
         engine = create_engine(DATABASE_URL)
@@ -65,9 +67,12 @@ def create_test_user():
         return True
     except Exception as e:
         print(f"Error creating test user: {e}")
+        if db:
+            db.rollback()
         return False
     finally:
-        db.close()
+        if db:
+            db.close()
 
 def main():
     print("Starting system setup...")
